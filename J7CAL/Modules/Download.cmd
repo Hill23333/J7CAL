@@ -1,5 +1,5 @@
 :Download.Minecraft.Start
-call:Download.Minecraft.id.JSON 1.21
+call:Download.Forge.List 1.21
 pause
 ::for /f %%i in ('jq -c -r ".versions[] | select(.type==\"%Download.Minecraft.Manifest.Type%\") | .id" "version_manifest_v2.json"') do echo %%i
 ::set /p "Download.Minecraft.Manifest.id=你要安装什么版本？"
@@ -18,7 +18,39 @@ goto :EOF
 :Download.Minecraft.Manifest.id.JSON
 for /f "delims=" %%i in ('jq -c ".versions[] | select(.id==\"%~1\")" "version_manifest_v2.json"') do set "Download.Minecraft.Manifest.%~1.JSON=%%i"
 
+
 :Download.Minecraft.Manifest.latest
 for /f "delims=" %%i in ('jq -r ".latest.release" "version_manifest_v2.json"') do set "Download.Minecraft.Manifest.latest.release=%%i"
 for /f "delims=" %%i in ('jq -r ".latest.snapshot" "version_manifest_v2.json"') do set "Download.Minecraft.Manifest.latest.snapshot=%%i"
+
+
+:Download.OptiFine.List
+
+
+
+:Download.Forge.List
+curl -O -s "https://files.minecraftforge.net/net/minecraftforge/forge/index_%~1.html"
+for /f %%i in (index_%~1.html) do if %%i=="<tbody>" set tbody=1 & if %%i=="</tbody>" set tbody=0 & if %tbody%==1 (echo %%i) > %~1.txt
+
+
+:Download.NeoForge.List
+
+
+
+:Download.Fabric.List
+
+
+
+:Download.Quilt.List
+
+
+
+:Download.LiteLoader.List
+
+
+
+:Download.Tools
+
+
+
 
