@@ -1,4 +1,5 @@
 :VersionParser.test
+setlocal enabledelayedexpansion
 set "VersionParser.GetClientJarInfo.minecraftPath=C:\Users\Hill233\AppData\Roaming\.minecraft"
 set "VersionParser.GetClientJarInfo.version=1.21"
 call:VersionParser.GetClientJarInfo
@@ -34,8 +35,9 @@ goto :EOF
 set "VersionParser.GetClientLibrariesInfo.jsonPath=%VersionParser.GetClientLibrariesInfo.minecraftPath%\versions\%VersionParser.GetClientLibrariesInfo.version%\%VersionParser.GetClientLibrariesInfo.version%.json"
 for /f "delims=" %%i in ('jq -r ".libraries|length" "%VersionParser.GetClientLibrariesInfo.jsonPath%"') do set VersionParser.GetClientJarInfo.librariesNumbers=%%i
 call:Helper.GetProcessorBitness
+set Helper.GetProcessorBitness.result=64
 set count=0
-for /f "delims=" %%i in ('jq --arg arch %Helper.GetProcessorBitness.result% -r ".libraries[]|if.natives.windows?then(.natives.windows|gsub(\"\\$\\{arch\\}\";$arch))as$native|[(.name),(.downloads.classifiers[$native].sha1),(.downloads.classifiers[$native].size),(.downloads.classifiers[$native].url),true]|join(\",\")else[(.name),(.downloads.artifact.sha1),(.downloads.artifact.size),(.downloads.artifact.url),false]|join(\",\")end" "%VersionParser.GetClientLibrariesInfo.jsonPath%"') do (
+for /f "delims=" %%i in ('jq --arg arch %Helper.GetProcessorBitness.result% -r ".libraries|map(if.natives.windows?then(.natives.windows|gsub(\"\\$\\{arch\\}\";$arch))as$native|[(.name),(.downloads.classifiers[$native].sha1),(.downloads.classifiers[$native].size),(.downloads.classifiers[$native].url),true]|join(\",\")else[(.name),(.downloads.artifact.sha1),(.downloads.artifact.size),(.downloads.artifact.url),false]|join(\",\") end)|unique|.[]" "%VersionParser.GetClientLibrariesInfo.jsonPath%"') do (
     for /f "tokens=1,2,3,4,5 delims= " %%a in ("%%i") do (
         set VersionParser.GetClientLibrariesInfo.result.!count!.name=%%a
         set VersionParser.GetClientLibrariesInfo.result.!count!.sha1=%%b
